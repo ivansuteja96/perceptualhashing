@@ -1,0 +1,68 @@
+package main
+
+import (
+	"fmt"
+	"image"
+	"net/http"
+	"strings"
+
+	_ "image/jpeg"
+	_ "image/png"
+
+	"github.com/corona10/goimagehash"
+)
+
+func main() {
+	// Open the image file
+	imageURL := "https://xxx.com" // Replace with your image URL
+
+	response, err := http.Get(imageURL)
+	if err != nil {
+		fmt.Println("Failed to download the image:", err)
+		return
+	}
+	defer response.Body.Close()
+
+	// Decode the image file
+	img, format, err := image.Decode(response.Body)
+	if err != nil {
+		fmt.Println("Error decoding image:", err)
+		return
+	}
+
+	fmt.Println("Image format:", format)
+
+	fmt.Println(GeneratePerceptionHash(img))
+	fmt.Println(ExtGeneratePerceptionHash(img, 8, 8))
+}
+
+func GeneratePerceptionHash(img image.Image) (hashString string, err error) {
+	hash, err := goimagehash.PerceptionHash(img)
+	if err != nil {
+		return
+	}
+
+	hashString = hash.ToString()
+	fmt.Println(hash.Bits(), hashString)
+	hashes := strings.Split(hashString, ":")
+	if len(hashes) > 1 {
+		hashString = hashes[1]
+	}
+
+	return
+}
+
+func ExtGeneratePerceptionHash(img image.Image, width int, height int) (hashString string, err error) {
+	hash, err := goimagehash.ExtPerceptionHash(img, width, height)
+	if err != nil {
+		return
+	}
+
+	hashString = hash.ToString()
+	hashes := strings.Split(hashString, ":")
+	if len(hashes) > 1 {
+		hashString = hashes[1]
+	}
+
+	return
+}
